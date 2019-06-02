@@ -17,6 +17,7 @@ class Manager:
         if self.session == None:
             Session = sessionmaker(bind=engine)
             session = Session()
+
         return session
 
 

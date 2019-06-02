@@ -16,6 +16,7 @@ def index():
 def static_content(content):
     return render_template(content)
 
+
 @app.route('/users', methods = ['GET'])
 def get_users():
     session = db.getSession(engine)
@@ -25,14 +26,6 @@ def get_users():
         data.append(user)
     return Response(json.dumps(data, cls=connector.AlchemyEncoder), mimetype='application/json')
 
-@app.route('/messages', methods = ['GET'])
-def get_messages():
-    session = db.getSession(engine)
-    dbResponse = session.query(entities.Message)
-    data = []
-    for message in dbResponse:
-        data.append(message)
-    return Response(json.dumps(data, cls=connector.AlchemyEncoder), mimetype='application/json')
 
 @app.route('/users/<id>', methods = ['GET'])
 def get_user(id):
@@ -59,7 +52,7 @@ def update_user():
 
 @app.route('/users', methods = ['POST'])
 def create_user():
-    c = json.loads(request.form['values'])
+    c =  json.loads(request.form['values'])
     user = entities.User(
         username=c['username'],
         name=c['name'],
@@ -71,18 +64,6 @@ def create_user():
     session.commit()
     return "Created User"
 
-@app.route('/messages', methods = ['POST'])
-def create_message():
-    c = json.loads(request.form['values'])
-    message = entities.Message(
-        content=c['content'],
-        user_from_id=c['user_from_id'],
-        user_to_id=c['user_to_id']
-    )
-    session = db.getSession(engine)
-    session.add(message)
-    session.commit()
-    return "Created Message"
 
 @app.route('/users', methods = ['DELETE'])
 def delete_message():
@@ -94,16 +75,6 @@ def delete_message():
     session.commit()
     return "Deleted user"
 
-@app.route('/messages', methods = ['DELETE'])
-def delete_message1():
-    id = request.form['key']
-    session = db.getSession(engine)
-    messages = session.query(entities.Message).filter(entities.Message.id == id)
-    for message in messages:
-        session.delete(message)
-    session.commit()
-    return "Deleted message"
-
 @app.route('/create_test_users', methods = ['GET'])
 def create_test_users():
     db_session = db.getSession(engine)
@@ -111,27 +82,6 @@ def create_test_users():
     db_session.add(user)
     db_session.commit()
     return "Test user created!"
-
-@app.route('/create_test_messages', methods = ['GET'])
-def create_test_messages():
-    db_session = db.getSession(engine)
-    message = entities.Message(content="Hola!", user_from_id=6, user_to_id=4)
-    db_session.add(message)
-    db_session.commit()
-    return "Test message created!"
-
-@app.route('/authenticate', methods = ['POST'])
-def authenticate():
-    username = request.form['username']
-    password = request.form['password']
-
-    db_session = db.getSession(engine)
-    try:
-        user = db_session.query(entities.User).filter(entities.User.username == username
-        ).filter(entities.User.password == password).one()
-        return render_template("success.html")
-    except Exception:
-        return render_template("fail.html")
 
 if __name__ == '__main__':
     app.secret_key = ".."
